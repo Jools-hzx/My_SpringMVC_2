@@ -27,4 +27,16 @@ public class FootballerServiceImpl implements FootballerService {
     public List<Footballer> listAllFootballers() {
         return footballerList;
     }
+
+    //该方法根据关键字查找对应的 footballer
+    @Override
+    public List<Footballer> listFootballersByName(String name) {
+        List<Footballer> footballers = new ArrayList<>();
+        for (Footballer footballer : footballerList) {
+            if (footballer.getName().contains(name)) {
+                footballers.add(footballer);
+            }
+        }
+        return footballers;
+    }
 }

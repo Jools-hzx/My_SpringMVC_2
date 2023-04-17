@@ -12,4 +12,6 @@ import java.util.List;
 public interface FootballerService {
 
     List<Footballer> listAllFootballers();
+
+    List<Footballer> listFootballersByName(String name);
 }
