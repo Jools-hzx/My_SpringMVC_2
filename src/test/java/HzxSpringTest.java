@@ -18,6 +18,6 @@ public class HzxSpringTest {
     @Test
     public void testScanPackage() {
         HzxApplicationContext hzxApplicationContext = new HzxApplicationContext();
-        hzxApplicationContext.init();
+        hzxApplicationContext.init("config.xml");
     }
 }

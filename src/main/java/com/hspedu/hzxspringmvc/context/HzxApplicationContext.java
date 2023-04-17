@@ -22,8 +22,8 @@ public class HzxApplicationContext {
     public ConcurrentHashMap<String, Object> IOC = new ConcurrentHashMap<>();
 
     //该方法用于初始化容器，完成各种注入操作
-    public void init() {
-        String scanPackages = XMLParser.getScanPackages("config.xml");
+    public void init(String xmlConfigLocation) {
+        String scanPackages = XMLParser.getScanPackages(xmlConfigLocation);
         //这里考虑后续可能会有多个待扫描的包
         if (scanPackages.length() > 1) {
             //TODO handle multi packages

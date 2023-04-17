@@ -4,6 +4,7 @@ import com.hspedu.hzxspringmvc.annotation.RequestMapping;
 import com.hspedu.hzxspringmvc.context.HzxApplicationContext;
 import com.hspedu.hzxspringmvc.handler.HzxHandler;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,10 +31,20 @@ public class HzxDispatchServlet extends HttpServlet {
     private List<HzxHandler> handlerList = new ArrayList<>();
 
     @Override
-    public void init() throws ServletException {
+    public void init(ServletConfig config) throws ServletException {
+
+        //获取xml配置文件的位置
+        /*
+        <init-param>
+            <param-name>contextConfiguration</param-name>
+            <param-value>classpath:config.xml</param-value>
+        </init-param>
+         */
+        String xmlLocation = config.getInitParameter("contextConfiguration").split(":")[1];
+
         //初始化IOC
         applicationContext = new HzxApplicationContext();
-        applicationContext.init();
+        applicationContext.init(xmlLocation);
 
         //初始化控制器映射
         executeHandlerMapping();
