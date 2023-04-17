@@ -1,6 +1,7 @@
 package com.hspedu.hzxspringmvc.servlet;
 
 import com.hspedu.hzxspringmvc.annotation.RequestMapping;
+import com.hspedu.hzxspringmvc.annotation.RequestParam;
 import com.hspedu.hzxspringmvc.context.HzxApplicationContext;
 import com.hspedu.hzxspringmvc.handler.HzxHandler;
 
@@ -16,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -103,6 +105,22 @@ public class HzxDispatchServlet extends HttpServlet {
                     }
                 }
 
+                //6.3 处理含有或不含有@RequestParam 注解的方法
+                //1.先获取 请求携带的所有参数名和其对应的value, 这里简单处理，假设一个k对应一个v
+                Map<String, String[]> parameterMap = request.getParameterMap();
+                //2.编写方法获取该实参列表应该存放对应形参类型值的位置
+                Parameter[] parameters = method.getParameters();
+
+                for (String k : parameterMap.keySet()) {
+                    int index = getParamValueIndex(k, parameters);
+                    if (-1 != index) {
+                        //如果不是-1。说明找到了位置; 这里简化，默认一个k仅配对一个v
+                        params[index] = parameterMap.get(k)[0];
+                    }
+                }
+
+                System.out.println("封装好的实参列表:" + Arrays.toString(params));
+
                 //执行方法
                 method.invoke(instance, params);
             } catch (Exception e) {
@@ -121,6 +139,31 @@ public class HzxDispatchServlet extends HttpServlet {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * 该方法返回请求的参数值应该存放到实参列表内的位置索引
+     *
+     * @param reqParamName  请求携带的参数名
+     * @param parameters 待执行方法的形参名列表
+     * @return  位置索引
+     */
+    private int getParamValueIndex(String reqParamName, Parameter[] parameters) {
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            if (parameter.isAnnotationPresent(RequestParam.class)) {
+                //如果该形参携带注解，判断请求的参数名是否和value一致
+                String value = parameter.getAnnotation(RequestParam.class).value();
+                if (reqParamName.equals(value)) {
+                    return i;
+                }
+            } else if (parameter.getName().equals(reqParamName)) {
+                //否则，按照默认形参名匹配
+                return i;
+            }
+        }
+        //如果未匹配到，返回-1
+        return -1;
     }
 
     //该方法根据浏览器发送的uri得到相应的handler去处理
