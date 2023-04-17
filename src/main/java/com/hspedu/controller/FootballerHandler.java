@@ -69,7 +69,7 @@ public class FootballerHandler {
     }
 
     //该方法通过调用 Service 层返回球员信息结果集合
-    @RequestMapping(value = "/footballer/list2")
+    @RequestMapping(value = "/footballer/listByName")
     public void listFootballersByName(@RequestParam(value = "name") String keyName,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {

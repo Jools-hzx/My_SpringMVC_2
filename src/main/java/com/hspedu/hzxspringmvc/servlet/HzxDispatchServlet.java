@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,28 @@ public class HzxDispatchServlet extends HttpServlet {
             //使用反射机制执行该方法
             try {
                 //先考虑形参只为 HttpServletRequest 和 HttpServletResponse 的情况
-                method.invoke(instance, request, response);
+//                method.invoke(instance, request, response);
+
+                //动态获取待执行方法的形参类型列表
+                Class<?>[] parameterTypes = method.getParameterTypes();
+
+                //初始化我们自己的实参列表，存放请求发来的实参, 长度与形参列表一致
+                Object[] params = new Object[parameterTypes.length];
+                System.out.println("params.length:" + params.length);
+
+                //先处理形参类型为 HttpServletRequest 或者 HttpServletResponse
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    //取出一个形参类型
+                    Class<?> parameterType = parameterTypes[i];
+                    if (HttpServletRequest.class.isAssignableFrom(parameterType)) {
+                        params[i] = request;
+                    } else if (HttpServletResponse.class.isAssignableFrom(parameterType)) {
+                        params[i] = response;
+                    }
+                }
+
+                //执行方法
+                method.invoke(instance, params);
             } catch (Exception e) {
                 e.printStackTrace();
             }
