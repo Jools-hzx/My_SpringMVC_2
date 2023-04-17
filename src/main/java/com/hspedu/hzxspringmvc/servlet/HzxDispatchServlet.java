@@ -122,7 +122,8 @@ public class HzxDispatchServlet extends HttpServlet {
                 System.out.println("封装好的实参列表:" + Arrays.toString(params));
 
                 //执行方法
-                method.invoke(instance, params);
+                Object res = method.invoke(instance, params);
+                executeViewsDispatch(res, request, response);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -141,12 +142,39 @@ public class HzxDispatchServlet extends HttpServlet {
         }
     }
 
+    //该方法模拟完成视图解析步骤
+    private void executeViewsDispatch(Object res, HttpServletRequest request, HttpServletResponse response) {
+        if (res instanceof String) {
+            //如果是String 类型，默认进行转发或者重定向
+            String result = ((String) res);
+            //"forward:/login_ok.jsp"
+            try {
+                if (result.contains(":")) {
+                    String[] split = result.split(":");
+                    String viewType = split[0];     //视图处理类型: forward / redirect
+                    String viewLocation = split[1];
+                    if ("forward".equals(viewType)) {
+                        request.getRequestDispatcher(viewLocation).forward(request, response);
+                    } else if ("redirect".equals(viewType)) {
+                        response.sendRedirect(request.getContextPath() + viewLocation);
+                    }
+                } else {
+                    //默认按照请求转发处理
+                    request.getRequestDispatcher(result).forward(request, response);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     /**
      * 该方法返回请求的参数值应该存放到实参列表内的位置索引
      *
-     * @param reqParamName  请求携带的参数名
-     * @param parameters 待执行方法的形参名列表
-     * @return  位置索引
+     * @param reqParamName 请求携带的参数名
+     * @param parameters   待执行方法的形参名列表
+     * @return 位置索引
      */
     private int getParamValueIndex(String reqParamName, Parameter[] parameters) {
         for (int i = 0; i < parameters.length; i++) {

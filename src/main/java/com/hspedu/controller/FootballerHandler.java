@@ -125,4 +125,23 @@ public class FootballerHandler {
             e.printStackTrace();
         }
     }
+
+    //该方法完成登录和调用视图解析
+    @RequestMapping(value = "/footballer/login")
+    public String login(@RequestParam(value = "name") String loginName,
+                      HttpServletRequest request,
+                      HttpServletResponse response) {
+        response.setContentType("text/html;charset=utf-8");
+
+        System.out.println("请求登录的名字" + loginName);
+        request.setAttribute("name", loginName);
+
+        if ("C.Ronaldo".equals(loginName)) {
+//            return "forward:/login_ok.jsp";
+//            return "redirect:/login_ok.jsp";
+            return "/login_ok.jsp";
+        } else {
+            return "forward:/login_error.jsp";
+        }
+    }
 }
