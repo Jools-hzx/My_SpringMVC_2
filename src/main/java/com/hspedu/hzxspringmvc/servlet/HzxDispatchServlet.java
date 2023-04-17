@@ -12,12 +12,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * @author Zexi He.
@@ -48,7 +48,7 @@ public class HzxDispatchServlet extends HttpServlet {
 
         //初始化控制器映射
         executeHandlerMapping();
-        System.out.println("\n控制器隐射器:" + handlerList);
+        System.out.println("\n控制器映射:" + handlerList);
     }
 
     @Override
@@ -114,6 +114,7 @@ public class HzxDispatchServlet extends HttpServlet {
         return null;
     }
 
+    //该方法将url映射等信息封装到 HzxHandler 并存储到集合中
     private void executeHandlerMapping() {
         //判断IOC是否为空
         if (applicationContext.IOC.isEmpty()) {

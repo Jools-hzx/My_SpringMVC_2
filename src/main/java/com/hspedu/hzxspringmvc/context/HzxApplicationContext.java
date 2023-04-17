@@ -1,14 +1,17 @@
 package com.hspedu.hzxspringmvc.context;
 
+import com.hspedu.hzxspringmvc.annotation.AutoWired;
 import com.hspedu.hzxspringmvc.annotation.Controller;
 import com.hspedu.hzxspringmvc.annotation.Service;
 import com.hspedu.hzxspringmvc.parser.XMLParser;
 import com.sun.xml.internal.ws.util.StringUtils;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -40,6 +43,10 @@ public class HzxApplicationContext {
         //将bean注入
         createBeanInstance();
         System.out.println("\nIOC:" + IOC);
+
+        //进行自动装配
+        executeAutoWired();
+        System.out.println("ok");
     }
 
     //该方法扫描目标包下的所有类，得到类的全类名
@@ -129,6 +136,52 @@ public class HzxApplicationContext {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    //该方法通过 AutoWired 注解判断执行自动装配
+    private void executeAutoWired() {
+        for (Map.Entry<String, Object> entry : IOC.entrySet()) {
+
+            //遍历获取bean的class对象
+            Object instance = entry.getValue();
+            Class<?> clazz = instance.getClass();
+
+            //获取class类的所有field
+            Field[] declaredFields = clazz.getDeclaredFields();
+            for (Field declaredField : declaredFields) {
+                //判断是否被@AutoWired注释
+                if (declaredField.isAnnotationPresent(AutoWired.class)) {
+                    AutoWired annotation = declaredField.getAnnotation(AutoWired.class);
+                    String name = annotation.value();
+                    if (!"".equals(name)) {
+                        executeAutoWiredIfInstancePresent(declaredField, name, instance);
+                    } else {
+                        //value()为""
+                        //默认按照 field 的类型首字母小写进行查找
+                        name = StringUtils.decapitalize(declaredField.getType().getSimpleName());
+                        executeAutoWiredIfInstancePresent(declaredField, name, instance);
+                    }
+                }
+            }
+        }
+    }
+
+    //该方法尝试从IOC中获取待自动装配的实例
+    private void executeAutoWiredIfInstancePresent(Field declaredField, String beanName, Object instance) {
+        Object bean = IOC.get(beanName);
+        if (null != bean) {
+            //如果bean不为null，进行装配
+            try {
+                declaredField.setAccessible(true);
+                declaredField.set(instance, bean);
+                declaredField.setAccessible(false);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        } else {
+            //否则进行报错
+            throw new NullPointerException("自动装配 beanName:" + beanName + " 失败");
         }
     }
 }

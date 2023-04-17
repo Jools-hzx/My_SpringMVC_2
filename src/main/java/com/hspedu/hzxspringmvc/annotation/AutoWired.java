@@ -4,13 +4,14 @@ import java.lang.annotation.*;
 
 /**
  * @author Zexi He.
- * @date 2023/4/17 15:07
- * @description:    此注解用于url映射
+ * @date 2023/4/17 16:37
+ * @description:    此注解用于完成自动装配
  */
-@Target(ElementType.METHOD)
+
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
 @Documented
-public @interface RequestMapping {
+public @interface AutoWired {
 
     String value() default "";
 }
