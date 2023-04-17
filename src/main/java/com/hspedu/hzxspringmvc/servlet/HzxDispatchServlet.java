@@ -1,7 +1,10 @@
 package com.hspedu.hzxspringmvc.servlet;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hspedu.hzxspringmvc.annotation.RequestMapping;
 import com.hspedu.hzxspringmvc.annotation.RequestParam;
+import com.hspedu.hzxspringmvc.annotation.ResponseBody;
 import com.hspedu.hzxspringmvc.context.HzxApplicationContext;
 import com.hspedu.hzxspringmvc.handler.HzxHandler;
 
@@ -123,7 +126,7 @@ public class HzxDispatchServlet extends HttpServlet {
 
                 //执行方法
                 Object res = method.invoke(instance, params);
-                executeViewsDispatch(res, request, response);
+                executeResult(res, request, response, method);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -143,7 +146,10 @@ public class HzxDispatchServlet extends HttpServlet {
     }
 
     //该方法模拟完成视图解析步骤
-    private void executeViewsDispatch(Object res, HttpServletRequest request, HttpServletResponse response) {
+    private void executeResult(Object res,
+                               HttpServletRequest request,
+                               HttpServletResponse response,
+                               Method method) {
         if (res instanceof String) {
             //如果是String 类型，默认进行转发或者重定向
             String result = ((String) res);
@@ -164,6 +170,23 @@ public class HzxDispatchServlet extends HttpServlet {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        } else if (res instanceof List) {
+            //如果返回结果是 List 类型，按照Json格式返回
+            if (method.isAnnotationPresent(ResponseBody.class)) {
+                String value = method.getAnnotation(ResponseBody.class).value();
+                if ("json".equals(value)) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        String json = mapper.writeValueAsString(res);
+                        PrintWriter writer = response.getWriter();
+                        writer.write(json);
+                        writer.flush();
+                        writer.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

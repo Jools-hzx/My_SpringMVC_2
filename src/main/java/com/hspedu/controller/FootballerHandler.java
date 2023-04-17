@@ -1,10 +1,7 @@
 package com.hspedu.controller;
 
 import com.hspedu.entity.Footballer;
-import com.hspedu.hzxspringmvc.annotation.AutoWired;
-import com.hspedu.hzxspringmvc.annotation.Controller;
-import com.hspedu.hzxspringmvc.annotation.RequestMapping;
-import com.hspedu.hzxspringmvc.annotation.RequestParam;
+import com.hspedu.hzxspringmvc.annotation.*;
 import com.hspedu.service.FootballerService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,6 +66,15 @@ public class FootballerHandler {
     }
 
     //该方法通过调用 Service 层返回球员信息结果集合
+    @RequestMapping(value = "/footballer/listJson")
+    @ResponseBody(value = "json")
+    public List<Footballer> listFootballersByJson(HttpServletRequest request,
+                                                  HttpServletResponse response) {
+        response.setContentType("text/html;charset=utf-8");
+        return footballerService.listAllFootballers();
+    }
+
+    //该方法通过调用 Service 层返回球员信息结果集合
     @RequestMapping(value = "/footballer/listByName")
     public void listFootballersByName(@RequestParam(value = "name") String keyName,
                                       HttpServletRequest request,
@@ -129,8 +135,8 @@ public class FootballerHandler {
     //该方法完成登录和调用视图解析
     @RequestMapping(value = "/footballer/login")
     public String login(@RequestParam(value = "name") String loginName,
-                      HttpServletRequest request,
-                      HttpServletResponse response) {
+                        HttpServletRequest request,
+                        HttpServletResponse response) {
         response.setContentType("text/html;charset=utf-8");
 
         System.out.println("请求登录的名字" + loginName);
