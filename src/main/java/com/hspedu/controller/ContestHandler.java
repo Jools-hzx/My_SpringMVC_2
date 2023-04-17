@@ -1,6 +1,10 @@
 package com.hspedu.controller;
 
 import com.hspedu.hzxspringmvc.annotation.Controller;
+import com.hspedu.hzxspringmvc.annotation.RequestMapping;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Zexi He.
@@ -10,4 +14,10 @@ import com.hspedu.hzxspringmvc.annotation.Controller;
 
 @Controller(value = "contestHandler")
 public class ContestHandler {
+
+    @RequestMapping(value = "/contest/list")
+    public void listContest(HttpServletRequest request,
+                            HttpServletResponse response) {
+        System.out.println("展示所有比赛信息.....");
+    }
 }
