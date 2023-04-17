@@ -1,6 +1,7 @@
 package com.hspedu.hzxspringmvc.context;
 
 import com.hspedu.hzxspringmvc.annotation.Controller;
+import com.hspedu.hzxspringmvc.annotation.Service;
 import com.hspedu.hzxspringmvc.parser.XMLParser;
 import com.sun.xml.internal.ws.util.StringUtils;
 
@@ -13,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Zexi He.
  * @date 2023/4/17 14:04
- * @description:    此类模拟完成各种 IOC 功能
+ * @description: 此类模拟完成各种 IOC 功能
  */
 public class HzxApplicationContext {
 
@@ -26,9 +27,14 @@ public class HzxApplicationContext {
         String scanPackages = XMLParser.getScanPackages(xmlConfigLocation);
         //这里考虑后续可能会有多个待扫描的包
         if (scanPackages.length() > 1) {
-            //TODO handle multi packages
+            //以 , 分割
+            String[] packages = scanPackages.split(",");
+            for (String aPackage : packages) {
+                getClassFullNameByScan(aPackage);
+            }
+        } else {
+            getClassFullNameByScan(scanPackages);
         }
-        getClassFullNameByScan(scanPackages);
         System.out.println("\nclassFullNameList:" + classFullNameList);
 
         //将bean注入
@@ -97,6 +103,25 @@ public class HzxApplicationContext {
                         //否则按照类名小写存放
                         beanName = StringUtils.decapitalize(clazz.getSimpleName());
                         IOC.put(beanName, instance);
+                    }
+                } else if (clazz.isAnnotationPresent(Service.class)) {
+                    //3. 注入被 Servcie 注释的 bean 对象
+                    Object instance = clazz.newInstance();
+                    Service annotation = clazz.getAnnotation(Service.class);
+                    String beanName = annotation.value();
+
+                    //以其实现的接口的首字母小写作为bean name 注入
+                    Class<?>[] interfaces = clazz.getInterfaces();
+                    for (Class<?> anInterface : interfaces) {
+                        String name = StringUtils.decapitalize(anInterface.getSimpleName());
+                        //放入到IOC
+                        IOC.put(name, instance);
+                    }
+                    //以其配置的 value 或者类名首字母小写注入
+                    if (!"".equals(beanName) && null != beanName) {
+                        IOC.put(beanName, instance);
+                    } else {
+                        IOC.put(StringUtils.decapitalize(clazz.getSimpleName()), instance);
                     }
                 } else {
                     //扩展其他注解
