@@ -5,6 +5,8 @@ import com.hspedu.hzxspringmvc.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Zexi He.
@@ -18,6 +20,18 @@ public class ContestHandler {
     @RequestMapping(value = "/contest/list")
     public void listContest(HttpServletRequest request,
                             HttpServletResponse response) {
-        System.out.println("展示所有比赛信息.....");
+        response.setContentType("text/html;charset=utf-8");
+
+        String header = "<h1>查看所有比赛信息</h1>";
+
+        PrintWriter writer = null;
+        try {
+            writer = response.getWriter();
+            writer.write(header);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

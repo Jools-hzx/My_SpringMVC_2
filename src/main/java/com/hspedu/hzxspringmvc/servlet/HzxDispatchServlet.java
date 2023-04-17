@@ -9,6 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,12 +42,65 @@ public class HzxDispatchServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("中央分发控制器的 doPost 方法被调用了....");
+        doGet(req, resp);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("中央分发控制器的 doGet 方法被调用了");
+        executeDispatch(req, resp);
+    }
+
+    private void executeDispatch(HttpServletRequest request, HttpServletResponse response) {
+        String requestURI = request.getRequestURI();
+        System.out.println("请求的URI:" + requestURI);
+
+        //设置获取请求参数的编码格式
+        try {
+            request.setCharacterEncoding("utf-8");
+        } catch (UnsupportedEncodingException e) {
+            System.out.println("设置request编码格式不正确");
+            e.printStackTrace();
+        }
+
+        //遍历 handlerList
+        HzxHandler handler = getHandler(request, requestURI);
+        if (null != handler) {
+            Method method = handler.getMethod();
+            Object instance = handler.getInstance();
+            //使用反射机制执行该方法
+            try {
+                //先考虑形参只为 HttpServletRequest 和 HttpServletResponse 的情况
+                method.invoke(instance, request, response);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            //如果没有找到handler，返回404
+            response.setContentType("text/html;charset=utf-8");
+            PrintWriter writer = null;
+            try {
+                writer = response.getWriter();
+                writer.write("<h1>404 NOT FOUND");
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //该方法根据浏览器发送的uri得到相应的handler去处理
+    private HzxHandler getHandler(HttpServletRequest request, String requestURI) {
+        for (HzxHandler hzxHandler : handlerList) {
+            //完整url: 工程项目名 + RequestMapping配置的 value
+            String url = request.getContextPath() + hzxHandler.getUrl();
+            if (requestURI.equals(url)) {
+                //如果找到，返回该Handler
+                return hzxHandler;
+            }
+        }
+        return null;
     }
 
     private void executeHandlerMapping() {
